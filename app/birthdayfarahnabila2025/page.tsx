@@ -394,67 +394,188 @@ export default function BirthdayMakeoverGame() {
       </AnimatePresence>
 
       {/* ============================================ */}
-      {/* INTRO SCREEN - Birthday Message + Surprise Box */}
+      {/* INTRO SCREEN - Dreamy Pixel Art Background */}
       {/* ============================================ */}
       <AnimatePresence>
         {(gamePhase === "intro" || gamePhase === "opening") && (
           <motion.div
-            className="fixed inset-0 z-30 flex cursor-pointer flex-col items-center justify-center bg-gradient-to-br from-pink-900 via-purple-900 to-slate-900"
+            className="fixed inset-0 z-30 flex cursor-pointer flex-col items-center justify-center overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, #E8D5F2 0%, #F5E6E8 30%, #FFE4EC 60%, #FFECD2 100%)",
+            }}
             onClick={handleIntroClick}
             exit={{ opacity: 0, scale: 1.1 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Sparkle particles background - using fixed positions */}
-            <div className="absolute inset-0 overflow-hidden">
-              {SPARKLE_POSITIONS.map((sparkle, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute h-2 w-2 rounded-full bg-yellow-400/60"
-                  style={{
-                    left: `${sparkle.left}%`,
-                    top: `${sparkle.top}%`,
-                  }}
-                  animate={{
-                    opacity: [0.2, 1, 0.2],
-                    scale: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: sparkle.duration,
-                    repeat: Infinity,
-                    delay: sparkle.delay,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Birthday text */}
+            {/* ===== PIXEL CLOUDS ===== */}
+            {/* Cloud 1 - Large left */}
             <motion.div
-              className="mb-12 text-center"
+              className="absolute"
+              style={{ left: "5%", top: "15%" }}
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="flex gap-1">
+                <div className="h-6 w-6 rounded-sm bg-white/90 shadow-lg" />
+                <div className="h-8 w-8 rounded-sm bg-white shadow-lg" />
+                <div className="h-10 w-10 rounded-sm bg-white shadow-lg" />
+                <div className="h-8 w-8 rounded-sm bg-white shadow-lg" />
+                <div className="h-6 w-6 rounded-sm bg-white/90 shadow-lg" />
+              </div>
+              <div className="ml-2 flex gap-1">
+                <div className="h-6 w-8 rounded-sm bg-white/80 shadow-lg" />
+                <div className="h-6 w-10 rounded-sm bg-white/90 shadow-lg" />
+                <div className="h-6 w-8 rounded-sm bg-white/80 shadow-lg" />
+              </div>
+            </motion.div>
+
+            {/* Cloud 2 - Medium right */}
+            <motion.div
+              className="absolute"
+              style={{ right: "10%", top: "20%" }}
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <div className="flex gap-1">
+                <div className="h-5 w-5 rounded-sm bg-white/90 shadow-lg" />
+                <div className="h-7 w-7 rounded-sm bg-white shadow-lg" />
+                <div className="h-8 w-8 rounded-sm bg-white shadow-lg" />
+                <div className="h-6 w-6 rounded-sm bg-white/90 shadow-lg" />
+              </div>
+              <div className="ml-1 flex gap-1">
+                <div className="h-4 w-6 rounded-sm bg-white/80 shadow-lg" />
+                <div className="h-4 w-8 rounded-sm bg-white/85 shadow-lg" />
+              </div>
+            </motion.div>
+
+            {/* Cloud 3 - Small bottom left */}
+            <motion.div
+              className="absolute"
+              style={{ left: "15%", bottom: "25%" }}
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <div className="flex gap-1">
+                <div className="h-4 w-4 rounded-sm bg-white/85 shadow-md" />
+                <div className="h-5 w-5 rounded-sm bg-white/90 shadow-md" />
+                <div className="h-6 w-6 rounded-sm bg-white shadow-md" />
+                <div className="h-4 w-4 rounded-sm bg-white/85 shadow-md" />
+              </div>
+            </motion.div>
+
+            {/* Cloud 4 - Medium bottom right */}
+            <motion.div
+              className="absolute"
+              style={{ right: "8%", bottom: "30%" }}
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            >
+              <div className="flex gap-1">
+                <div className="h-5 w-5 rounded-sm bg-white/90 shadow-md" />
+                <div className="h-7 w-7 rounded-sm bg-white shadow-md" />
+                <div className="h-6 w-6 rounded-sm bg-white/95 shadow-md" />
+                <div className="h-5 w-5 rounded-sm bg-white/85 shadow-md" />
+              </div>
+              <div className="ml-2 flex gap-1">
+                <div className="h-4 w-6 rounded-sm bg-white/80 shadow-md" />
+                <div className="h-4 w-5 rounded-sm bg-white/75 shadow-md" />
+              </div>
+            </motion.div>
+
+            {/* ===== PIXEL STARS ===== */}
+            {[
+              { left: "20%", top: "10%", size: 12, delay: 0 },
+              { left: "75%", top: "12%", size: 10, delay: 0.3 },
+              { left: "85%", top: "40%", size: 14, delay: 0.6 },
+              { left: "10%", top: "45%", size: 11, delay: 0.9 },
+              { left: "30%", top: "75%", size: 10, delay: 0.2 },
+              { left: "70%", top: "70%", size: 13, delay: 0.5 },
+              { left: "50%", top: "8%", size: 12, delay: 0.7 },
+              { left: "90%", top: "60%", size: 9, delay: 0.4 },
+            ].map((star, i) => (
+              <motion.div
+                key={`star-${i}`}
+                className="absolute"
+                style={{
+                  left: star.left,
+                  top: star.top,
+                  width: star.size,
+                  height: star.size,
+                }}
+                animate={{
+                  opacity: [0.4, 1, 0.4],
+                  scale: [0.8, 1.2, 0.8],
+                  rotate: [0, 180, 360],
+                }}
+                transition={{
+                  duration: 2 + star.delay,
+                  repeat: Infinity,
+                  delay: star.delay,
+                }}
+              >
+                {/* 8-bit star shape */}
+                <div className="relative h-full w-full">
+                  <div className="absolute left-1/2 top-0 h-1/3 w-1/5 -translate-x-1/2 bg-yellow-300" />
+                  <div className="absolute left-0 top-1/2 h-1/5 w-1/3 -translate-y-1/2 bg-yellow-300" />
+                  <div className="absolute right-0 top-1/2 h-1/5 w-1/3 -translate-y-1/2 bg-yellow-300" />
+                  <div className="absolute bottom-0 left-1/2 h-1/3 w-1/5 -translate-x-1/2 bg-yellow-300" />
+                  <div className="absolute left-1/2 top-1/2 h-2/5 w-2/5 -translate-x-1/2 -translate-y-1/2 bg-yellow-200" />
+                </div>
+              </motion.div>
+            ))}
+
+            {/* ===== SPARKLES ===== */}
+            {SPARKLE_POSITIONS.slice(0, 15).map((sparkle, i) => (
+              <motion.div
+                key={`sparkle-${i}`}
+                className="absolute h-1.5 w-1.5 rounded-full"
+                style={{
+                  left: `${sparkle.left}%`,
+                  top: `${sparkle.top}%`,
+                  backgroundColor: i % 3 === 0 ? "#FFE4A0" : "#FFFFFF",
+                  boxShadow: "0 0 4px rgba(255,255,255,0.8)",
+                }}
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.5, 1.2, 0.5],
+                }}
+                transition={{
+                  duration: sparkle.duration,
+                  repeat: Infinity,
+                  delay: sparkle.delay,
+                }}
+              />
+            ))}
+
+            {/* ===== BIRTHDAY TEXT (z-50) ===== */}
+            <motion.div
+              className="relative z-50 mb-12 text-center"
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3, type: "spring" }}
             >
               <motion.p
-                className="mb-2 text-2xl text-pink-300"
+                className="mb-2 text-2xl font-medium text-purple-600"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
+                style={{ textShadow: "0 2px 10px rgba(168, 85, 247, 0.3)" }}
               >
                 ✨ Happy Birthday 26th ✨
               </motion.p>
               <h1
-                className="text-5xl font-bold tracking-wider text-white md:text-7xl"
+                className="text-5xl font-bold tracking-wider text-purple-700 md:text-7xl"
                 style={{
-                  textShadow:
-                    "0 0 30px rgba(236, 72, 153, 0.8), 0 0 60px rgba(168, 85, 247, 0.5)",
+                  textShadow: "0 4px 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(236, 72, 153, 0.3)",
+                  WebkitTextStroke: "1px rgba(255,255,255,0.5)",
                 }}
               >
                 FARAH NABILA
               </h1>
             </motion.div>
 
-            {/* Surprise Box */}
+            {/* ===== SURPRISE BOX (z-50) ===== */}
             <motion.div
-              className="relative"
+              className="relative z-50"
               initial={{ scale: 0, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
@@ -463,8 +584,8 @@ export default function BirthdayMakeoverGame() {
                 animate={
                   gamePhase === "intro"
                     ? {
-                      y: [0, -10, 0],
-                      rotate: [-2, 2, -2],
+                      y: [0, -15, 0],
+                      rotate: [-3, 3, -3],
                     }
                     : {}
                 }
@@ -488,14 +609,17 @@ export default function BirthdayMakeoverGame() {
                 />
               </motion.div>
 
-              {/* Glow effect */}
-              <div className="absolute inset-0 -z-10 animate-pulse rounded-full bg-pink-500/30 blur-3xl" />
+              {/* Glow effect - softer pastel */}
+              <div
+                className="absolute inset-0 -z-10 animate-pulse rounded-full blur-3xl"
+                style={{ backgroundColor: "rgba(244, 114, 182, 0.4)" }}
+              />
             </motion.div>
 
-            {/* Click instruction */}
+            {/* ===== CLICK INSTRUCTION (z-50) ===== */}
             {gamePhase === "intro" && (
               <motion.p
-                className="mt-12 text-lg text-purple-300/70"
+                className="relative z-50 mt-12 text-lg font-medium text-purple-500"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -507,7 +631,7 @@ export default function BirthdayMakeoverGame() {
             {/* Opening text */}
             {gamePhase === "opening" && (
               <motion.p
-                className="mt-12 text-2xl text-yellow-400"
+                className="relative z-50 mt-12 text-2xl font-bold text-pink-500"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
               >

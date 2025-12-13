@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "rizaldap.experiment",
-  description: "Personal experiments & creative playground by Rizal Dwi Apriyanto",
+  description: "Personal experiments & creative playground by Rizal Dwi Adhipramana",
 };
 
 export default function RootLayout({
