@@ -693,10 +693,23 @@ export default function BirthdayMakeoverGame() {
                   : {}
               }
             >
-              {/* Character image - changes based on equipped items */}
-              <div
+              {/* Character image with idle animation - changes based on equipped items */}
+              <motion.div
                 className="relative"
                 style={{ width: "200px", height: "350px" }}
+                animate={
+                  !showCelebration
+                    ? {
+                      y: [0, -4, 0, -4, 0],
+                      scaleY: [1, 1.01, 1, 0.99, 1],
+                    }
+                    : {}
+                }
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 <Image
                   src={getCharacterImage()}
@@ -706,7 +719,7 @@ export default function BirthdayMakeoverGame() {
                   style={{ imageRendering: "pixelated" }}
                   priority
                 />
-              </div>
+              </motion.div>
 
               {/* Sparkle effects on celebration */}
               {showCelebration && (
