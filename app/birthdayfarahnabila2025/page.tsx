@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+
+// ============================================
+// LOCK CONFIGURATION
+// ============================================
+const UNLOCK_DATE = new Date("2025-12-28T00:00:00+07:00"); // December 28, 2025 00:00:00 WIB
+const SECRET_PASSWORD = "rizalloveara";
 
 // ============================================
 // ADJUSTABLE SNAP POSITIONS - Edit these values!
@@ -55,7 +61,15 @@ const SPARKLE_POSITIONS = [
   { left: 12, top: 22, duration: 3.3, delay: 0.1 },
 ];
 
-type GamePhase = "intro" | "opening" | "game" | "celebration";
+type GamePhase = "locked" | "intro" | "opening" | "game" | "celebration";
+
+// Countdown timer interface
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
 
 // ============================================
 // SOUND EFFECTS - 8-bit style using Web Audio API
@@ -275,8 +289,67 @@ export default function BirthdayMakeoverGame() {
   // Sound effects
   const { playHover, playPickup, playEquip, playVictory, playBoxOpen, startGameMusic, stopGameMusic, playHappyBirthday } = useSoundEffects();
 
-  // Game phase
-  const [gamePhase, setGamePhase] = useState<GamePhase>("intro");
+  // Lock screen state
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isTimeUp, setIsTimeUp] = useState(false);
+
+  // Calculate time remaining
+  const calculateTimeLeft = useCallback((): TimeLeft => {
+    const now = new Date();
+    const difference = UNLOCK_DATE.getTime() - now.getTime();
+
+    if (difference <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((difference % (1000 * 60)) / 1000),
+    };
+  }, []);
+
+  // Check if unlock date has passed and setup countdown timer
+  useEffect(() => {
+    const checkTime = () => {
+      const now = new Date();
+      if (now >= UNLOCK_DATE) {
+        setIsTimeUp(true);
+        setGamePhase("intro");
+      } else {
+        setTimeLeft(calculateTimeLeft());
+      }
+    };
+
+    // Initial check
+    checkTime();
+
+    // Update every second
+    const timer = setInterval(checkTime, 1000);
+
+    return () => clearInterval(timer);
+  }, [calculateTimeLeft]);
+
+  // Handle password submission
+  const handlePasswordSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    console.log("Submitted password:", passwordInput, "Expected:", SECRET_PASSWORD);
+    if (passwordInput.toLowerCase().trim() === SECRET_PASSWORD) {
+      console.log("Password correct! Unlocking...");
+      playEquip();
+      setGamePhase("intro");
+    } else {
+      console.log("Wrong password!");
+      setPasswordError(true);
+      setTimeout(() => setPasswordError(false), 1500);
+    }
+  };
+
+  // Game phase - starts as locked
+  const [gamePhase, setGamePhase] = useState<GamePhase>("locked");
 
   // State management
   const [isGlassesEquipped, setIsGlassesEquipped] = useState(false);
@@ -390,6 +463,244 @@ export default function BirthdayMakeoverGame() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 bg-white"
           />
+        )}
+      </AnimatePresence>
+
+      {/* ============================================ */}
+      {/* LOCK SCREEN - Countdown Timer */}
+      {/* ============================================ */}
+      <AnimatePresence>
+        {gamePhase === "locked" && !isTimeUp && (
+          <motion.div
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+            }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Retro grid background */}
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(138, 43, 226, 0.3) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(138, 43, 226, 0.3) 1px, transparent 1px)
+                `,
+                backgroundSize: "40px 40px",
+              }}
+            />
+
+            {/* Floating pixel stars */}
+            {SPARKLE_POSITIONS.map((sparkle, i) => (
+              <motion.div
+                key={`lock-sparkle-${i}`}
+                className="absolute h-2 w-2"
+                style={{
+                  left: `${sparkle.left}%`,
+                  top: `${sparkle.top}%`,
+                  backgroundColor: i % 2 === 0 ? "#a855f7" : "#ec4899",
+                  boxShadow: `0 0 10px ${i % 2 === 0 ? "#a855f7" : "#ec4899"}`,
+                }}
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.5, 1.5, 0.5],
+                }}
+                transition={{
+                  duration: sparkle.duration,
+                  repeat: Infinity,
+                  delay: sparkle.delay,
+                }}
+              />
+            ))}
+
+            {/* Lock Icon - 16-bit style */}
+            <motion.div
+              className="relative z-10 mb-8"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+            >
+              <div className="relative">
+                {/* Lock body */}
+                <div className="h-20 w-24 rounded-sm border-4 border-purple-400 bg-purple-600 shadow-lg shadow-purple-500/50">
+                  {/* Keyhole */}
+                  <div className="mx-auto mt-4 h-4 w-4 rounded-full bg-purple-900" />
+                  <div className="mx-auto h-6 w-2 bg-purple-900" />
+                </div>
+                {/* Lock shackle */}
+                <div className="absolute -top-8 left-1/2 h-10 w-16 -translate-x-1/2 rounded-t-full border-4 border-b-0 border-purple-400 bg-transparent" />
+              </div>
+            </motion.div>
+
+            {/* Title */}
+            <motion.div
+              className="relative z-10 mb-2 text-center"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <h1
+                className="text-3xl font-bold tracking-wider text-purple-300 md:text-4xl"
+                style={{
+                  textShadow: "0 0 20px rgba(168, 85, 247, 0.8), 4px 4px 0 #1a1a2e",
+                  fontFamily: "monospace",
+                }}
+              >
+                🔒 LOCKED 🔒
+              </h1>
+              <p className="mt-2 text-sm text-purple-400/80">
+                A surprise is being prepared...
+              </p>
+            </motion.div>
+
+            {/* Countdown Timer */}
+            <motion.div
+              className="relative z-10 my-8"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <div className="flex gap-4">
+                {/* Days */}
+                <div className="flex flex-col items-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-4 border-pink-500/50 bg-pink-900/50 shadow-lg shadow-pink-500/30">
+                    <span
+                      className="text-4xl font-bold text-pink-300"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {String(timeLeft.days).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <span className="mt-2 text-xs text-pink-400">DAYS</span>
+                </div>
+
+                <span className="flex items-center text-3xl text-purple-400">:</span>
+
+                {/* Hours */}
+                <div className="flex flex-col items-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-4 border-purple-500/50 bg-purple-900/50 shadow-lg shadow-purple-500/30">
+                    <span
+                      className="text-4xl font-bold text-purple-300"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {String(timeLeft.hours).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <span className="mt-2 text-xs text-purple-400">HOURS</span>
+                </div>
+
+                <span className="flex items-center text-3xl text-purple-400">:</span>
+
+                {/* Minutes */}
+                <div className="flex flex-col items-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-4 border-blue-500/50 bg-blue-900/50 shadow-lg shadow-blue-500/30">
+                    <span
+                      className="text-4xl font-bold text-blue-300"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {String(timeLeft.minutes).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <span className="mt-2 text-xs text-blue-400">MINUTES</span>
+                </div>
+
+                <span className="flex items-center text-3xl text-purple-400">:</span>
+
+                {/* Seconds */}
+                <motion.div
+                  className="flex flex-col items-center"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-4 border-cyan-500/50 bg-cyan-900/50 shadow-lg shadow-cyan-500/30">
+                    <span
+                      className="text-4xl font-bold text-cyan-300"
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {String(timeLeft.seconds).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <span className="mt-2 text-xs text-cyan-400">SECONDS</span>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* Unlock Date Info */}
+            <motion.p
+              className="relative z-10 mb-8 text-center text-sm text-purple-400/60"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              Unlocks on December 28, 2025 at 00:00 WIB
+            </motion.p>
+
+            {/* Password Form */}
+            <motion.form
+              onSubmit={handlePasswordSubmit}
+              className="relative z-10 flex flex-col items-center gap-4"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <p className="text-sm text-purple-300">
+                🔑 Or enter the secret password:
+              </p>
+              <div className="flex gap-2">
+                <motion.input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="Enter password..."
+                  className="w-48 rounded-lg border-4 border-purple-600/50 bg-purple-950/50 px-4 py-3 text-center font-mono text-purple-200 placeholder-purple-600 outline-none focus:border-purple-400 focus:shadow-lg focus:shadow-purple-500/30"
+                  animate={passwordError ? { x: [-10, 10, -10, 10, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                />
+                <motion.button
+                  type="submit"
+                  onClick={() => handlePasswordSubmit()}
+                  className="rounded-lg border-4 border-pink-500/50 bg-pink-600 px-6 py-3 font-bold text-white transition-all hover:bg-pink-500"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  🎁
+                </motion.button>
+              </div>
+              {passwordError && (
+                <motion.p
+                  className="text-sm text-red-400"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ❌ Wrong password! Try again~
+                </motion.p>
+              )}
+            </motion.form>
+
+            {/* Pixel art decoration - bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-purple-900/50">
+              <div className="flex h-full w-full">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={`pixel-${i}`}
+                    className="h-full flex-1"
+                    style={{
+                      backgroundColor: i % 2 === 0 ? "#4c1d95" : "#581c87",
+                    }}
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: i * 0.1,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -569,7 +880,7 @@ export default function BirthdayMakeoverGame() {
                   WebkitTextStroke: "1px rgba(255,255,255,0.5)",
                 }}
               >
-                FARAH NABILA
+                FARAH NABILLAH
               </h1>
             </motion.div>
 
@@ -784,7 +1095,7 @@ export default function BirthdayMakeoverGame() {
                     ✨ INVENTORY ✨
                   </h1>
                   <p className="text-sm text-purple-400/70">
-                    Drag items to dress up Farah!
+                    Drag items to dress up Farah Nabillah!
                   </p>
                 </div>
 
@@ -934,7 +1245,7 @@ export default function BirthdayMakeoverGame() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Happy Birthday, Farah! 🎂
+              Happy Birthday, Farah Nabillah! 🎂
             </motion.p>
           </motion.div>
         )}
