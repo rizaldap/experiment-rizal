@@ -312,26 +312,21 @@ export default function BirthdayMakeoverGame() {
     };
   }, []);
 
-  // Check if unlock date has passed and setup countdown timer
-  useEffect(() => {
-    const checkTime = () => {
-      const now = new Date();
-      if (now >= UNLOCK_DATE) {
-        setIsTimeUp(true);
-        setGamePhase("intro");
-      } else {
-        setTimeLeft(calculateTimeLeft());
-      }
-    };
-
-    // Initial check
-    checkTime();
-
-    // Update every second
-    const timer = setInterval(checkTime, 1000);
-
-    return () => clearInterval(timer);
-  }, [calculateTimeLeft]);
+  // Timer disabled - game starts directly at intro now
+  // useEffect(() => {
+  //   const checkTime = () => {
+  //     const now = new Date();
+  //     if (now >= UNLOCK_DATE) {
+  //       setIsTimeUp(true);
+  //       setGamePhase("intro");
+  //     } else {
+  //       setTimeLeft(calculateTimeLeft());
+  //     }
+  //   };
+  //   checkTime();
+  //   const timer = setInterval(checkTime, 1000);
+  //   return () => clearInterval(timer);
+  // }, [calculateTimeLeft]);
 
   // Handle password submission
   const handlePasswordSubmit = (e?: React.FormEvent) => {
@@ -348,8 +343,8 @@ export default function BirthdayMakeoverGame() {
     }
   };
 
-  // Game phase - starts as locked
-  const [gamePhase, setGamePhase] = useState<GamePhase>("locked");
+  // Game phase - starts directly at intro (lock removed)
+  const [gamePhase, setGamePhase] = useState<GamePhase>("intro");
 
   // State management
   const [isGlassesEquipped, setIsGlassesEquipped] = useState(false);
