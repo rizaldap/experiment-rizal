@@ -1261,37 +1261,30 @@ export default function BirthdayMakeoverGame() {
             transition={{ duration: 0.5 }}
           >
             <div className="text-center">
-              {/* Video element - will play when file is added */}
+              {/* Video element - Cloudinary hosted */}
               <video
-                className="max-h-[80vh] max-w-[90vw] rounded-lg opacity-50"
+                className="max-h-[80vh] max-w-[90vw] rounded-lg shadow-2xl shadow-pink-500/30"
                 autoPlay
                 playsInline
-                onError={() => {
-                  console.log("Video not found - showing placeholder");
-                }}
+                controls
               >
                 <source
-                  src="/assets/birthdayAra2025/video-reward.mp4"
+                  src="https://res.cloudinary.com/dx01dcz8k/video/upload/WhatsApp_Video_2025-12-27_at_22.28.31_bcklvq.mp4"
                   type="video/mp4"
                 />
+                Your browser does not support the video tag.
               </video>
 
-              {/* Placeholder text when video not available */}
+              {/* Replay button */}
               <motion.div
                 className="mt-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <p className="text-2xl text-pink-300">🎬 VIDEO REWARD</p>
-                <p className="mt-2 text-sm text-slate-500">
-                  (Add video-reward.mp4 to /public/assets/birthdayAra2025/)
-                </p>
-
-                {/* Replay button */}
                 <button
                   onClick={resetGame}
-                  className="mt-8 rounded-lg bg-pink-600 px-8 py-3 font-bold text-white transition-colors hover:bg-pink-500"
+                  className="rounded-lg bg-pink-600 px-8 py-3 font-bold text-white transition-colors hover:bg-pink-500"
                 >
                   🔄 PLAY AGAIN
                 </button>
