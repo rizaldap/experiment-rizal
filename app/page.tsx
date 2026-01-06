@@ -184,6 +184,30 @@ export default function ExperimentLanding() {
           </p>
         </div>
 
+        {/* Experiments List */}
+        <div className="delay-500 fade-in-up mt-8 w-full max-w-md">
+          <h3 className="mb-4 text-center font-mono text-sm text-zinc-500">
+            [ EXPERIMENTS ]
+          </h3>
+          <div className="space-y-3">
+            <a
+              href="/glassHello"
+              className="group flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-all hover:border-white/20 hover:bg-white/10"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🪞</span>
+                <div>
+                  <p className="font-medium text-zinc-200">Glass Hello</p>
+                  <p className="text-xs text-zinc-500">Camera mirror effect</p>
+                </div>
+              </div>
+              <span className="text-zinc-600 transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </a>
+          </div>
+        </div>
+
         {/* Terminal-style text */}
         <div className="delay-500 fade-in-up mt-12 font-mono text-sm text-zinc-600">
           <span className="text-zinc-500">$</span> rizaldap --explore{" "}

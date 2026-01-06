@@ -4,6 +4,18 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
+// Disable right-click to prevent inspect
+const useDisableRightClick = () => {
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+};
+
 // ============================================
 // LOCK CONFIGURATION
 // ============================================
@@ -286,6 +298,9 @@ const useSoundEffects = () => {
 };
 
 export default function BirthdayMakeoverGame() {
+  // Disable right-click
+  useDisableRightClick();
+
   // Sound effects
   const { playHover, playPickup, playEquip, playVictory, playBoxOpen, startGameMusic, stopGameMusic, playHappyBirthday } = useSoundEffects();
 
