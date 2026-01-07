@@ -17,6 +17,59 @@ const useDisableRightClick = () => {
 };
 
 // ============================================
+// IMAGE PRELOADER HOOK
+// ============================================
+const useImagePreloader = (imageSources: string[]) => {
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [isAllLoaded, setIsAllLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (imageSources.length === 0) {
+      setIsAllLoaded(true);
+      return;
+    }
+
+    let loadedImages = 0;
+    const totalImages = imageSources.length;
+
+    const preloadImage = (src: string) => {
+      return new Promise<void>((resolve) => {
+        const img = new window.Image();
+        img.onload = () => {
+          loadedImages++;
+          setLoadedCount(loadedImages);
+          if (loadedImages === totalImages) {
+            setIsAllLoaded(true);
+          }
+          resolve();
+        };
+        img.onerror = () => {
+          console.warn(`Failed to load image: ${src}`);
+          loadedImages++;
+          setLoadedCount(loadedImages);
+          setHasError(true);
+          if (loadedImages === totalImages) {
+            setIsAllLoaded(true);
+          }
+          resolve();
+        };
+        img.src = src;
+      });
+    };
+
+    // Load all images
+    Promise.all(imageSources.map(preloadImage));
+  }, [imageSources]);
+
+  const progress = imageSources.length > 0
+    ? Math.round((loadedCount / imageSources.length) * 100)
+    : 100;
+
+  return { isAllLoaded, progress, loadedCount, totalImages: imageSources.length, hasError };
+};
+
+// ============================================
 // LOCK CONFIGURATION
 // ============================================
 const UNLOCK_DATE = new Date("2025-12-28T00:00:00+07:00"); // December 28, 2025 00:00:00 WIB
@@ -48,6 +101,9 @@ const ASSETS = {
   surpriseClose: "/assets/birthdayAra2025/surpriseBoxClose.png",
   surpriseOpen: "/assets/birthdayAra2025/surpriseBoxOpen.png",
 };
+
+// All images to preload
+const ALL_IMAGES = Object.values(ASSETS);
 
 // Pre-defined sparkle positions (fixed to avoid hydration mismatch)
 const SPARKLE_POSITIONS = [
@@ -301,6 +357,9 @@ export default function BirthdayMakeoverGame() {
   // Disable right-click
   useDisableRightClick();
 
+  // Image preloader - load all images before showing content
+  const { isAllLoaded, progress, loadedCount, totalImages } = useImagePreloader(ALL_IMAGES);
+
   // Sound effects
   const { playHover, playPickup, playEquip, playVictory, playBoxOpen, startGameMusic, stopGameMusic, playHappyBirthday } = useSoundEffects();
 
@@ -473,6 +532,218 @@ export default function BirthdayMakeoverGame() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 bg-white"
           />
+        )}
+      </AnimatePresence>
+
+      {/* ============================================ */}
+      {/* LOADING SCREEN - Preload all images */}
+      {/* ============================================ */}
+      <AnimatePresence>
+        {!isAllLoaded && (
+          <motion.div
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+            style={{
+              background: "linear-gradient(180deg, #0f0f23 0%, #1a1a3e 50%, #2d1b4e 100%)",
+            }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Retro grid background */}
+            <div
+              className="absolute inset-0 opacity-15"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(168, 85, 247, 0.4) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(168, 85, 247, 0.4) 1px, transparent 1px)
+                `,
+                backgroundSize: "30px 30px",
+              }}
+            />
+
+            {/* Floating pixel particles */}
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={`load-particle-${i}`}
+                className="absolute h-2 w-2"
+                style={{
+                  left: `${10 + (i * 7)}%`,
+                  top: `${20 + (i % 4) * 20}%`,
+                  backgroundColor: i % 2 === 0 ? "#a855f7" : "#ec4899",
+                  boxShadow: `0 0 10px ${i % 2 === 0 ? "#a855f7" : "#ec4899"}`,
+                }}
+                animate={{
+                  y: [0, -30, 0],
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 2 + (i * 0.2),
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                }}
+              />
+            ))}
+
+            {/* Loading Icon - Animated Gift Box */}
+            <motion.div
+              className="relative z-10 mb-8"
+              animate={{
+                rotate: [0, -5, 5, -5, 0],
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <div className="relative">
+                {/* Gift box body */}
+                <div className="h-20 w-24 rounded-lg border-4 border-pink-400 bg-gradient-to-b from-pink-500 to-pink-600 shadow-lg shadow-pink-500/50">
+                  {/* Ribbon horizontal */}
+                  <div className="absolute left-1/2 top-0 h-full w-3 -translate-x-1/2 bg-yellow-300" />
+                  {/* Ribbon vertical */}
+                  <div className="absolute left-0 top-1/2 h-3 w-full -translate-y-1/2 bg-yellow-300" />
+                  {/* Center bow */}
+                  <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-200" />
+                </div>
+                {/* Sparkles around gift */}
+                {[0, 1, 2, 3].map((i) => (
+                  <motion.div
+                    key={`gift-sparkle-${i}`}
+                    className="absolute h-2 w-2 rounded-full bg-yellow-300"
+                    style={{
+                      left: `${-10 + i * 40}%`,
+                      top: `${-20 + (i % 2) * 120}%`,
+                    }}
+                    animate={{
+                      opacity: [0, 1, 0],
+                      scale: [0, 1.5, 0],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      delay: i * 0.25,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Title */}
+            <motion.div
+              className="relative z-10 mb-6 text-center"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h1
+                className="text-2xl font-bold tracking-wider text-purple-300 md:text-3xl"
+                style={{
+                  textShadow: "0 0 20px rgba(168, 85, 247, 0.8), 4px 4px 0 #1a1a2e",
+                  fontFamily: "monospace",
+                }}
+              >
+                🎮 LOADING... 🎮
+              </h1>
+              <p className="mt-2 text-sm text-purple-400/80">
+                Preparing your birthday surprise~
+              </p>
+            </motion.div>
+
+            {/* Progress Bar Container */}
+            <motion.div
+              className="relative z-10 mb-4 w-64 overflow-hidden rounded-lg border-4 border-purple-600/50 bg-purple-950/50 p-1 shadow-lg shadow-purple-500/20 md:w-80"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              {/* Progress bar background */}
+              <div className="relative h-6 w-full overflow-hidden rounded bg-purple-900/50">
+                {/* Animated progress fill */}
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded"
+                  style={{
+                    background: "linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f472b6 100%)",
+                    boxShadow: "0 0 20px rgba(236, 72, 153, 0.5)",
+                  }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                />
+                {/* Shimmer effect */}
+                <motion.div
+                  className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  animate={{ x: [-80, 320] }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+                {/* Pixel pattern overlay */}
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    backgroundImage: "repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(0,0,0,0.2) 4px, rgba(0,0,0,0.2) 8px)",
+                  }}
+                />
+              </div>
+            </motion.div>
+
+            {/* Progress Text */}
+            <motion.div
+              className="relative z-10 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <p
+                className="text-lg font-bold text-pink-300"
+                style={{ fontFamily: "monospace" }}
+              >
+                {progress}%
+              </p>
+              <p className="mt-1 text-xs text-purple-500">
+                Loading assets... ({loadedCount}/{totalImages})
+              </p>
+            </motion.div>
+
+            {/* Cute loading messages */}
+            <motion.p
+              className="relative z-10 mt-6 text-sm text-purple-400/60"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              {progress < 30 && "✨ Collecting sparkles..."}
+              {progress >= 30 && progress < 60 && "🎁 Wrapping presents..."}
+              {progress >= 60 && progress < 90 && "💖 Adding love..."}
+              {progress >= 90 && "🎉 Almost ready!"}
+            </motion.p>
+
+            {/* Pixel art decoration - bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-8">
+              <div className="flex h-full w-full">
+                {[...Array(20)].map((_, i) => (
+                  <motion.div
+                    key={`load-pixel-${i}`}
+                    className="h-full flex-1"
+                    style={{
+                      backgroundColor: i % 2 === 0 ? "#4c1d95" : "#581c87",
+                    }}
+                    animate={{
+                      opacity: [0.3, 0.8, 0.3],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.08,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -1114,7 +1385,7 @@ export default function BirthdayMakeoverGame() {
                   {/* Glasses - disappears when equipped */}
                   {!isGlassesEquipped && (
                     <motion.div
-                      className="cursor-grab active:cursor-grabbing"
+                      className="cursor-grab select-none active:cursor-grabbing"
                       drag
                       dragSnapToOrigin
                       onDragEnd={(_, info) => handleDragEnd("glasses", info)}
@@ -1141,8 +1412,10 @@ export default function BirthdayMakeoverGame() {
                           width={100}
                           height={50}
                           style={{ imageRendering: "pixelated" }}
+                          draggable={false}
+                          className="pointer-events-none"
                         />
-                        <p className="mt-2 text-center text-xs text-purple-300">
+                        <p className="mt-2 text-center text-xs text-purple-300 pointer-events-none">
                           👓 GLASSES
                         </p>
                       </div>
@@ -1152,7 +1425,7 @@ export default function BirthdayMakeoverGame() {
                   {/* Shoes - disappears when equipped */}
                   {!isShoesEquipped && (
                     <motion.div
-                      className="cursor-grab active:cursor-grabbing"
+                      className="cursor-grab select-none active:cursor-grabbing"
                       drag
                       dragSnapToOrigin
                       onDragEnd={(_, info) => handleDragEnd("shoes", info)}
@@ -1180,8 +1453,10 @@ export default function BirthdayMakeoverGame() {
                           width={120}
                           height={60}
                           style={{ imageRendering: "pixelated" }}
+                          draggable={false}
+                          className="pointer-events-none"
                         />
-                        <p className="mt-2 text-center text-xs text-purple-300">
+                        <p className="mt-2 text-center text-xs text-purple-300 pointer-events-none">
                           👟 SHOES
                         </p>
                       </div>
